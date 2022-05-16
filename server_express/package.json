@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "@notionhq/client": "^0.4.11",
+    "body-parser": "^1.19.1",
+    "bulma": "^0.7.2",
+    "child_process": "^1.0.2",
+    "compression": "^1.7.4",
+    "express": "^4.17.2",
+    "helmet": "^4.6.0",
+    "helmet-csp": "^3.4.0",
+    "jquery": "^3.6.0",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
+    "mongodb": "^4.2.2",
+    "mongoose": "^6.1.1",
+    "path": "^0.12.7",
+    "pug": "^3.0.2",
+    "sass": "^1.49.9"
+  },
+  "scripts": {
+    "css-build": "sass public/scss/mystyles.scss public/css/mystyles.css",
+    "css-watch": "npm run css-build -- --watch",
+    "start": "node main"
+  }
+}

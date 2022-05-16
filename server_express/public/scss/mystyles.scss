@@ -1,0 +1,23 @@
+@charset "utf-8";
+
+$themeColours: (
+    "maroon" :maroon, 
+    "red" :red,
+    "purple" :purple,
+    "fuchsia" :fuchsia,
+    "green" :green,
+    "lime" :lime,
+    "olive" :olive,
+    "yellow" :yellow,
+    "navy" :navy,
+    "blue" :blue,
+    "teal" :teal,
+    "aqua" :aqua
+);
+
+@each $color, $value in $themeColours 
+{
+    .has-background-#{$color} {background-color:$value;};
+};
+
+@import "../../node_modules/bulma/bulma.sass";

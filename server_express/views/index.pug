@@ -1,0 +1,272 @@
+doctype html
+html
+  head
+    title #{title}
+    link(rel='stylesheet', href="/css/mystyles.css")
+    script(src="node_modules/jquery/dist/jquery.js", type="text/javscript")
+
+  body
+    p.hiddendata isdataloaded?#{isdataloaded}
+    p.hidden mainScoreData_index?#{mainScoreData_index}
+    p.hidden mainScoreData_main?#{mainScoreData_main}
+    p.hidden collec?#{collec}
+    div
+      - 
+        collec = JSON.parse(collec)
+        collec_withindex = {}
+        for (let i=0; i<collec.length; i++) {collec_withindex[i]=collec[i]}
+        mainScoreData_index = JSON.parse(mainScoreData_index)
+        mainScoreData_index = Object.entries(mainScoreData_index)
+        mainScoreData_main_old =  JSON.parse(mainScoreData_main) 
+        mainScoreData_main = []
+        for (key in mainScoreData_main_old) {var value = mainScoreData_main_old[key]; mainScoreData_main.push([key,Object.entries(value)])}
+        mainScoreData_main.sort(sortbydate)
+        mainScoreData_commulative = JSON.parse(mainScoreData_commulative)
+
+      // index case
+      div.columns 
+        each val in mainScoreData_index
+          div.column
+            p.index(id=val[0]) #{val[1]} 
+        
+      // mainData case
+      div.columns
+        each arr in mainScoreData_main
+          div.column
+            p.main_outter #{arr[0]}
+            p.commulative(id=arr[0]) #{JSON.stringify(mainScoreData_commulative[arr[0]])}
+              each val in arr[1]
+                p.main_inner(id=arr[0]) #{val[0]}:#{val[1]}
+
+    div.columns
+      div.column
+        form(action='/api/SETTINGsSet/', method="post")
+          input(type="hidden", name="portal2", value=iam)
+          div.columns
+            div.column
+              input.slider.has-output.is-fullwidth(id="sliderWithValue" name="slider1" step="1" min="0" max="14" value=showday_amount type="range" )
+              output(for="sliderWithValue" ) #{showday_amount}
+            div.column
+              input(class="button", type="submit", value="submit" )
+
+      div.column
+        form(action="/api/notionUpdate", method="post") 
+          input(type="hidden",name="portal1", value=iam )
+          input.refreshData(class="button", type="submit", value="refresh Data" )
+
+      div.coloumn
+        form(action="/api/collecSet/", method="post")
+          div.select
+            select(name="collec_num")
+              each name, index in collec_withindex
+                option(value=index) #{name}
+
+          input(type="hidden",name="portal4", value=iam )
+          input(class="button", type="submit", value="submit" )
+
+
+
+      div.column
+        a(class="button" href="/home/rate_adjust") Set density of prop
+
+
+    script.
+      // html inline sorting fromdate
+      function sortbydate(a,b)
+      {
+        var a_date = Date.parse(a[0])
+        var b_date = Date.parse(b[0])
+        if (a_date < b_date) {return -1}
+        else if (a_date > b_date) {return 1}
+        else {return 0}
+      }
+
+      // tag hiding part
+      function getElementsByClassName_repeat(className, repeatFunc)
+      {
+        var gets = document.getElementsByClassName(className)
+
+        for (var i=0; i < gets.length; i++)
+        {
+          var target = gets[i]
+          repeatFunc(target)
+        }
+      }
+      var hidden_values = {}
+      function hider_storingOK(target)
+      {
+        target.hidden = true
+        var targetquerry = (target.innerText).split("?")
+        hidden_values[targetquerry[0]] = {"value":targetquerry[1]}
+      }
+      function hider_storingNO(target)
+      {
+        target.hidden = true
+      }
+
+
+      getElementsByClassName_repeat('hiddendata', hider_storingOK)
+      getElementsByClassName_repeat("hidden",hider_storingNO)
+      //main score part
+      ////inner main score grabing code
+      var main_organized = []
+
+      function main_inner_organizer(target)
+      {
+        var date_string = target.id
+        var value_string = target.innerText.split(":")
+        var propname = value_string[0]
+        var point = Number(value_string[1])
+
+        var tag_object = {"propname":propname, "point":point, "tagBody":target, "tagWhere":"inner"}
+        
+        for (let i=0; i<main_organized.length; i++)
+        {
+          var innerobj = main_organized[i]
+          if (innerobj["date"] == date_string)
+          {
+            main_organized[i]["tags"].push(tag_object)
+            return
+          }
+        }
+        main_organized.push({"date":date_string, "tags":[tag_object]})
+      }
+
+      getElementsByClassName_repeat("main_inner", main_inner_organizer)
+
+      main_organized.sort((a,b) => {
+        var a_date = Date.parse(a.date)
+        var b_date = Date.parse(b.date)
+        if (a_date < b_date) {return -1}
+        else if (a_date > b_date) {return 1}
+        else {return 0}
+      })
+
+      ////outer main score grabbing code
+      function main_outter_organizer(target)
+      {
+        var date_string = target.innerText
+        var tag_object = {"tagBody":target, "tagWhere":"outter"}
+        for (let i=0; i<main_organized.length; i++)
+        {
+          var innerobj = main_organized[i]
+          if (innerobj["date"] == date_string)
+          {
+            main_organized[i]["tags"].push(tag_object)
+            return
+          }
+        }
+      }
+      getElementsByClassName_repeat("main_outter", main_outter_organizer)
+
+      ////index grabbing code
+      var index_organized = {}
+      function index_organizer(target)
+      {
+        var propname = target.id
+        var color = target.innerText
+        index_organized[propname] = {"color" : color, "tagBody" : target}
+      }
+      getElementsByClassName_repeat("index", index_organizer)
+
+      ////commulative score grabbing code
+      var commulative_organized = {}
+      function commulative_organizer(target)
+      {
+
+        var comu_obj = JSON.parse(target.innerText)
+        var date = target.id
+        var pointsum = 0
+        for (propname in comu_obj)
+        {
+          var point = comu_obj[propname]
+          pointsum += point
+        }
+        commulative_organized[date] = {"value":pointsum, "tagBody":target}
+      }
+
+      getElementsByClassName_repeat("commulative", commulative_organizer)
+
+      ////index beautify
+      for (propname in index_organized)
+      {
+        var color = index_organized[propname]["color"]
+        var tag = index_organized[propname]["tagBody"]
+        tag.innerText = propname
+        tag.className += " has-background-" + color
+        tag.className += " has-text-light"
+      }
+
+      ////main score beautify
+      for (date in main_organized)
+      {
+        var dateTable = main_organized[date]
+        var tagArr = dateTable["tags"]
+        var pointSum = 0
+        var lazyOuter = undefined
+        for (let i=0;i<tagArr.length; i++)
+        {
+          var taginfo = tagArr[i]
+          if (taginfo["tagWhere"] === "inner")
+          {
+            var tag = taginfo["tagBody"]
+            var point = taginfo["point"]
+            var propname = taginfo["propname"]
+            //change text to point
+            pointSum += Math.floor(point*1000)
+            if (point !== 0) {tag.innerText = (Math.floor(point*1000)).toString()}
+            else {tag.hidden=true}
+            tag.className += " has-background-" + index_organized[propname]["color"]
+            tag.className += " has-text-light"
+          }
+          if (taginfo["tagWhere"] === "outter") {lazyOuter = i}
+        }
+        var outer_tag = tagArr[lazyOuter]["tagBody"]
+        outer_tag.innerText += "\n" + pointSum.toString()
+      }
+
+      ////commulative beautify
+      for (date in commulative_organized)
+      {
+        var tag = commulative_organized[date]["tagBody"]
+        var value = commulative_organized[date]["value"]
+        tag.innerText = (Math.floor(value*1000)).toString()
+      }
+
+      //slider DB loading succed or fail showing
+      var isdataloaded = hidden_values["isdataloaded"]["value"]
+      var inputTarget = document.getElementsByClassName('refreshData')[0]
+      if (isdataloaded === "0")
+      {
+        inputTarget.setAttribute("value", "check the last DB update")
+      }
+      else if (isdataloaded === "-1" )
+      {
+        inputTarget.setAttribute("value", "no Data!")
+      }
+      else
+      {
+        inputTarget.setAttribute("value", "last update :"+isdataloaded)
+      }
+
+
+      //sliders value showing code
+      var sliders = document.querySelectorAll('input[type="range"].slider')
+      sliders.forEach((slider) => {
+
+        var id = slider.id 
+
+        var outputsSet = document.getElementsByTagName('output')
+        for (var i=0; i < outputsSet.length; i++) 
+        {
+          var output = outputsSet[i]
+          if ((output.htmlFor.toString()).trim() === id.trim())
+          {
+            // connect the output and slider.
+            slider.addEventListener('input', (event) => {
+              output.value = event.target.value
+            })
+          }
+        }
+      }) 
+
