@@ -18,22 +18,35 @@ const IDstore_pageamount = {
 
 //mdg.undo_mainNotion("lifeRhythms", "catManage", IDStore_passorfail.todoID)
 
-function update()
+function update(current_date)
 {
     for (key in collecStore_passorFail)
     {
         collecname = collecStore_passorFail[key]
         idname = IDStore_passorfail[key]
-        mdg.update_mainNotion("lifeRhythms", collecname, idname)
+        mdg.update_mainNotion("lifeRhythms", collecname, idname, current_date)
     }
 }
-function undo()
+function undo(current_date)
 {
     for (key in collecStore_passorFail)
     {
         collecname = collecStore_passorFail[key]
         idname = IDStore_passorfail[key]
-        mdg.undo_mainNotion("lifeRhythms", collecname, idname)
+        mdg.undo_mainNotion("lifeRhythms", collecname, idname, current_date)
     }
 }
-update()
+
+
+
+process.argv.forEach((val, index) => {
+    if (index === 2)
+    {
+        var count = val.split("-").length - 1
+        if (count == 2)
+        {
+            update(val)
+        }
+    }
+
+  });

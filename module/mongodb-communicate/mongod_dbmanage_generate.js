@@ -3,7 +3,7 @@ const Notion = require('../notion-communicate/index')
 const uri = 'mongodb+srv://cluster0.hlcwf.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509&retryWrites=true&w=majority'
 const credentials = 'X509-cert-7653934695476317602.pem'
 
-async function update_mainNotion(dbname, collecname, notionID)
+async function update_mainNotion(dbname, collecname, notionID, current_date_string)
 {
     var seleted_dbnaming = {DB:dbname, collection:collecname}
     
@@ -20,7 +20,7 @@ async function update_mainNotion(dbname, collecname, notionID)
         const collec = database.collection(seleted_dbnaming.collection)
         
         //get date data.
-        var calender = await Notion.getItemNOTION_passorfail(notionID)
+        var calender = await Notion.getItemNOTION_passorfail(notionID, current_date_string)
         async function applyeachid(predoc) 
         {
             var current_id = predoc["id"]
@@ -47,7 +47,7 @@ async function update_mainNotion(dbname, collecname, notionID)
 
 
 
-async function undo_mainNotion(dbname, collecname, notionID)
+async function undo_mainNotion(dbname, collecname, notionID, current_date_string)
 {
     var seleted_dbnaming = {DB:dbname, collection:collecname}
     
@@ -64,7 +64,7 @@ async function undo_mainNotion(dbname, collecname, notionID)
         const collec = database.collection(seleted_dbnaming.collection)
         
         //get date data.
-        var calender = await Notion.getItemNOTION_passorfail(notionID)
+        var calender = await Notion.getItemNOTION_passorfail(notionID, current_date_string)
         async function applyeachid(predoc) 
         {
             var current_id = predoc["id"]

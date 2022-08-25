@@ -36,10 +36,10 @@ async function getIDfromCollecNum(dbnum, dbcollec)
 
 
 // passorfail DBname's methods
-async function getItemNOTION_passorfail(databaseId) {
+async function getItemNOTION_passorfail(databaseId, current_date_string) {
   try {
     //prepare to change day of week to date
-    var currnet_date = moment()
+    var currnet_date = moment(current_date_string)
     var current_day = (Number(currnet_date.format("d")) +6 ) % 7  // starts at 0=monday, ends at 6=sunday.
     var week = [false, false, false, false, false, false, false]
 
